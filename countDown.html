@@ -4,131 +4,154 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Montserrat:900">
-    <title>Document</title>
+    <title>Countdown Timer</title>
     <style>
-
-body{
+body {
     background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
 }
-  
+
 #timer {
-  color: #eeeeee;
-  text-align: center;
-  text-transform: uppercase;
-  font-family: 'Lato', sans-serif;
-  font-size: .7em;
-  letter-spacing: 5px;
+    color: #eeeeee;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: 'Lato', sans-serif;
+    font-size: .7em;
+    letter-spacing: 5px;
+    margin-bottom: 30px;
 }
 
 .days, .hours, .minutes, .seconds {
-  display: inline-block;
-  padding: 20px;
-  width: 100px;
-  border-radius: 5px;
+    display: inline-block;
+    padding: 20px;
+    width: 100px;
+    border-radius: 5px;
 }
 
-.days {
-  background: #EF2F3C;
-}
-
-.hours {
-  background: #eeeeee;
-  color: #183059;
-}
-
-.minutes {
-  background: #276FBF;
-}
-
-.seconds {
-  background: #F0A202;
-}
+.days { background: #EF2F3C; }
+.hours { background: #eeeeee; color: #183059; }
+.minutes { background: #276FBF; }
+.seconds { background: #F0A202; }
 
 .numbers {
-  font-family: 'Montserrat', sans-serif;
-  color:  #183059;
-  font-size: 4em;
-  text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    color: #183059;
+    font-size: 4em;
+    text-align: center;
 }
 
-.white {
-  position: absolute;
-  background:  #eeeeee;
-  height: 85px;
-  width: 75px;
-  left: 30%;
-  top: 2%;
+/* 진행률 바 */
+#progress-container {
+    width: 560px;
+    max-width: 90vw;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.75em;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #555;
 }
 
-.red {
-  position: absolute;
-  background:  #EF2F3C;
-  left: 18%;
-  top: 9%;
-  height: 65px;
-  width: 70px;
- 
+#progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
 }
 
-.blue {
-  position: absolute;
-  background:  #276FBF;
-  height: 80px;
-  width: 80px;
-  left: 60%;
-  top: 5%;
-
-
+#progress-bar-bg {
+    background: #e0e0e0;
+    border-radius: 10px;
+    height: 14px;
+    width: 100%;
+    overflow: hidden;
 }
 
+#progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #EF2F3C, #276FBF);
+    transition: width 1s linear;
+}
 
+#progress-percent {
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 700;
+    color: #183059;
+    font-size: 1.1em;
+}
     </style>
 </head>
 <body>
-    
+
 <div id="timer">
-
-    <div class="days"> 
-        <div id="days" class="numbers "> </div>days</div> 
-      <div class="hours"> 
-        <div  id="hours" class="numbers"> </div>hours</div> 
-      <div class="minutes"> 
-        <div  id="minutes" class="numbers"> </div>minutes</div> 
-      <div   class="seconds"> 
-        <div id="seconds" class="numbers"> </div>seconds</div> 
-      </div>
-
+    <div class="days">
+        <div id="days" class="numbers"></div>days
+    </div>
+    <div class="hours">
+        <div id="hours" class="numbers"></div>hours
+    </div>
+    <div class="minutes">
+        <div id="minutes" class="numbers"></div>minutes
+    </div>
+    <div class="seconds">
+        <div id="seconds" class="numbers"></div>seconds
+    </div>
 </div>
 
-</body>
+<div id="progress-container">
+    <div id="progress-label">
+        <span>2026.02.17</span>
+        <span>2026.06.09</span>
+    </div>
+    <div id="progress-bar-bg">
+        <div id="progress-bar-fill" style="width: 0%"></div>
+    </div>
+    <div id="progress-percent">0%</div>
+</div>
+
 <script>
-    const year = new Date().getFullYear();
-const myDate = new Date('Oct 15, 2024 00:00:00');
-console.log(myDate);
+    // 시작일과 종료일 설정
+    const startDate = new Date('Feb 17, 2026 00:00:00').getTime();
+    const endDate   = new Date('Jun 09, 2026 00:00:00').getTime();
 
-// countdown
-let timer = setInterval(function() {
+    const totalDuration = endDate - startDate;
 
-  // get today's date
-  const today = new Date().getTime();
+    setInterval(function () {
+        const now  = new Date().getTime();
+        const diff = endDate - now;
 
-  // get the difference
-  const diff = myDate - today;
+        if (diff <= 0) {
+            document.getElementById("days").innerHTML    = '0';
+            document.getElementById("hours").innerHTML   = '0';
+            document.getElementById("minutes").innerHTML = '0';
+            document.getElementById("seconds").innerHTML = '0';
+            document.getElementById("progress-bar-fill").style.width = '100%';
+            document.getElementById("progress-percent").innerHTML     = '100%';
+            return;
+        }
 
-  // math
-  let days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-  // display
-  document.getElementById("days").innerHTML=days
-  document.getElementById("hours").innerHTML=hours
-  document.getElementById("minutes").innerHTML=minutes
-  document.getElementById("seconds").innerHTML=seconds
+        document.getElementById("days").innerHTML    = days;
+        document.getElementById("hours").innerHTML   = hours;
+        document.getElementById("minutes").innerHTML = minutes;
+        document.getElementById("seconds").innerHTML = seconds;
 
+        // 진행률 계산 (시작일 기준)
+        const elapsed  = now - startDate;
+        const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+        document.getElementById("progress-bar-fill").style.width = progress.toFixed(2) + '%';
+        document.getElementById("progress-percent").innerHTML     = progress.toFixed(1) + '%';
 
-
-}, 1);
+    }, 1000);
 </script>
+</body>
 </html>
