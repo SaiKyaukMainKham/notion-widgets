@@ -107,6 +107,44 @@ h1 {
 </div>
 
 <script>
+    // 1. Get the parameters from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // 2. Look for the "s" parameter (e.g., ?s=blue)
+    const bgColor = urlParams.get('b');
+    const colorInUrl = urlParams.get('c');
+    
+    // 3. If a color is found, apply it to the body background
+    if (bgColor) {
+        document.body.style.backgroundColor = bgColor;
+    }
+    // If the parameter exists, apply it to the .card element
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (colorInUrl) {
+        const card = document.querySelector('.card');
+        if (card) {
+            // 1. Set the background immediately (Browser handles name or hex)
+            card.style.backgroundColor = colorInUrl;
+    
+            // 2. Use a "ghost" element to convert names/hex to RGB for the shadow
+            const temp = document.createElement("div");
+            temp.style.color = colorInUrl;
+            document.body.appendChild(temp);
+            
+            // Get the standard "rgb(r, g, b)" string from the browser
+            const rgb = window.getComputedStyle(temp).color;
+            document.body.removeChild(temp);
+    
+            // 3. Darken the RGB values for the box-shadow
+            const rgbValues = rgb.match(/\d+/g).map(Number);
+            const darken = (val) => Math.max(0, val - 40); // Subtract 40 for a darker shade
+            const shadowColor = `rgb(${darken(rgbValues[0])}, ${darken(rgbValues[1])}, ${darken(rgbValues[2])})`;
+    
+            card.style.boxShadow = `2px 2px 1px 0px ${shadowColor}`;
+        }
+    }
+
     function date() {
 var today = new Date();
  // 2026年3月5日 木曜日
