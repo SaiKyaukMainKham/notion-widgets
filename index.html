@@ -109,34 +109,46 @@ h1 {
 <script>
     document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const colorInUrl = urlParams.get('c'); // Updated from 's' to 'c'
+    let colorInUrl = urlParams.get('c');
 
     if (colorInUrl) {
+        // SAFE-GUARD: If the user typed ?c=FF5733 (no #), add it back.
+        // If they used %23, it already looks like #FF5733 to JS.
+        const hexPattern = /^[0-9A-F]{3,6}$/i;
+        if (hexPattern.test(colorInUrl)) {
+            colorInUrl = '#' + colorInUrl;
+        }
+
         const cards = document.querySelectorAll('.card');
         
         cards.forEach(card => {
-            // 1. Set the background color
-            card.style.backgroundColor = colorInUrl;
+            try {
+                // 1. Set background
+                card.style.backgroundColor = colorInUrl;
 
-            // 2. Use a temporary element to let the browser resolve the color (handles hex & names)
-            const temp = document.createElement("div");
-            temp.style.color = colorInUrl;
-            document.body.appendChild(temp);
-            const rgbString = window.getComputedStyle(temp).color;
-            document.body.removeChild(temp);
+                // 2. Resolve color to RGB via a temp element
+                const temp = document.createElement("div");
+                temp.style.color = colorInUrl;
+                document.body.appendChild(temp);
+                const rgbString = window.getComputedStyle(temp).color;
+                document.body.removeChild(temp);
 
-            // 3. Extract RGB values
-            const rgb = rgbString.match(/\d+/g).map(Number);
+                // 3. Extract RGB values safely
+                const rgbMatch = rgbString.match(/\d+/g);
+                if (rgbMatch) {
+                    const [r, g, b] = rgbMatch.map(Number);
 
-            // 4. Calculate a darker shadow (subtracting 40 from each channel)
-            const darken = (val) => Math.max(0, val - 40);
-            const shadowColor = `rgb(${darken(rgb[0])}, ${darken(rgb[1])}, ${darken(rgb[2])})`;
-            card.style.boxShadow = `2px 2px 1px 0px ${shadowColor}`;
+                    // 4. Create Darker Shadow
+                    const darken = (val) => Math.max(0, val - 50);
+                    card.style.boxShadow = `2px 2px 1px 0px rgb(${darken(r)}, ${darken(g)}, ${darken(b)})`;
 
-            // 5. Automatic Text Contrast (Black text for light backgrounds, White for dark)
-            // Brightness formula: (R*299 + G*587 + B*114) / 1000
-            const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-            card.style.color = brightness > 155 ? '#000000' : '#ffffff';
+                    // 5. Contrast Check (ensure text is visible)
+                    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                    card.style.color = brightness > 155 ? '#000' : '#fff';
+                }
+            } catch (e) {
+                console.error("Invalid color provided in URL:", colorInUrl);
+            }
         });
     }
 });
