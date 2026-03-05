@@ -107,52 +107,56 @@ h1 {
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+   document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
-    let colorInUrl = urlParams.get('c');
-
-    if (colorInUrl) {
-        // SAFE-GUARD: If the user typed ?c=FF5733 (no #), add it back.
-        // If they used %23, it already looks like #FF5733 to JS.
+    
+    // Function to sanitize hex input (adds # if missing)
+    const sanitizeColor = (color) => {
+        if (!color) return null;
         const hexPattern = /^[0-9A-F]{3,6}$/i;
-        if (hexPattern.test(colorInUrl)) {
-            colorInUrl = '#' + colorInUrl;
-        }
+        return hexPattern.test(color) ? '#' + color : color;
+    };
 
+    const cardColor = sanitizeColor(urlParams.get('c'));
+    const bodyColor = sanitizeColor(urlParams.get('b'));
+
+    // 1. UPDATE BODY BACKGROUND
+    if (bodyColor) {
+        document.body.style.backgroundColor = bodyColor;
+    }
+
+    // 2. UPDATE CARD(S)
+    if (cardColor) {
         const cards = document.querySelectorAll('.card');
-        
         cards.forEach(card => {
             try {
-                // 1. Set background
-                card.style.backgroundColor = colorInUrl;
+                card.style.backgroundColor = cardColor;
 
-                // 2. Resolve color to RGB via a temp element
+                // Resolve to RGB for shadow/text contrast
                 const temp = document.createElement("div");
-                temp.style.color = colorInUrl;
+                temp.style.color = cardColor;
                 document.body.appendChild(temp);
                 const rgbString = window.getComputedStyle(temp).color;
                 document.body.removeChild(temp);
 
-                // 3. Extract RGB values safely
                 const rgbMatch = rgbString.match(/\d+/g);
                 if (rgbMatch) {
                     const [r, g, b] = rgbMatch.map(Number);
 
-                    // 4. Create Darker Shadow
-                    const darken = (val) => Math.max(0, val - 50);
+                    // Darker Shadow
+                    const darken = (v) => Math.max(0, v - 50);
                     card.style.boxShadow = `2px 2px 1px 0px rgb(${darken(r)}, ${darken(g)}, ${darken(b)})`;
 
-                    // 5. Contrast Check (ensure text is visible)
+                    // Text Contrast
                     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
                     card.style.color = brightness > 155 ? '#000' : '#fff';
                 }
             } catch (e) {
-                console.error("Invalid color provided in URL:", colorInUrl);
+                console.warn("Invalid card color:", cardColor);
             }
         });
     }
 });
-
 
     function date() {
 var today = new Date();
